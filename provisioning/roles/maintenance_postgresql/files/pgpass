@@ -1,0 +1,3 @@
+touch ~/.pgpass
+chmod 0600 ~/.pgpass
+*:*:*:*:PasswordPostgres1c

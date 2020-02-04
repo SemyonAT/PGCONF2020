@@ -1,0 +1,10 @@
+---
+# defaults file for patroni
+postgres_1cadmin_password: "Password1c"
+postgres_replicator_password: "Password1c"
+postgres_password: "Password1c"
+patroni_rest_password: "Password1c"
+postgres_bin_dir: "/usr/pgsql-11/bin"
+postgres_listen_address: "{{ ansible_hostname }}"
+postgres_max_clients: 1000
+

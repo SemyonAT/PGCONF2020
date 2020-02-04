@@ -1,0 +1,44 @@
+- name: Set timezone to Europe/Moscow
+  timezone:
+    name: Europe/Moscow
+
+- name: Disable selinux
+  selinux: state=disabled
+  notify:
+    - restart system
+
+- name: install packages epel-release
+  yum: 
+    name:
+    - epel-release
+
+- name: install packages other
+  yum: 
+    name:
+    - net-tools
+    - sysstat
+    - htop
+    - vim
+    - atop
+    - telnet
+    - chrony
+    - tcpdump
+    - nmap
+    - unzip
+    - traceroute
+    - wget
+    - lsof
+    - rsync
+
+- name: enable firewalld
+  systemd: 
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: enable chrony
+  systemd: 
+    name: chronyd
+    state: started
+    enabled: yes
+    

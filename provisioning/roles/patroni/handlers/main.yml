@@ -1,0 +1,23 @@
+---
+# handlers file for patroni
+
+- name: reload patroni buh
+  systemd:
+    name: patroni-buh
+    daemon_reload: yes
+
+- name: restart patroni buh
+  systemd:
+    name: patroni-buh
+    state: restarted
+
+- name: reload patroni zup
+  systemd:
+    name: patroni-zup
+    daemon_reload: yes
+
+- name: restart patroni zup
+  systemd:
+    name: patroni-zup
+    state: restarted
+    

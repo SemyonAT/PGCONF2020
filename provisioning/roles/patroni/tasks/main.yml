@@ -1,0 +1,107 @@
+---
+### set firewalld
+- name: Enable port for consul in firewalld 
+  firewalld:
+    zone: public
+    port: 8008/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 
+  firewalld:
+    zone: public
+    port: 8009/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+# tasks file for patroni
+
+- name: Install dependansi for Patroni
+  yum:
+    name:
+      - python2-pip
+      - python-devel
+      - gcc
+      - python-virtualenv
+      
+- name: install pip upgrade
+  pip:
+    name: 
+      - pip
+      #- setuptools
+    state: latest
+
+- name: install setuptools=42.0.2
+  pip:
+    name: 
+      - setuptools==42.0.2
+
+#pip install -U pip setuptools
+- name: install psycopg2==2.7
+  pip:
+    name: 
+      - psycopg2==2.7
+      - functools32
+      #- urllib3==1.23
+
+      #- python-etcd
+      #- dnspython
+      #- boto
+      #- mock
+      #- PyYAML
+      #- flake8==3.3.0
+      #- psycopg2-binary
+
+- name: install dependansi
+  pip:
+    name: 
+      - python-consul
+      - patroni[consul]
+      
+- name: install patroni-buh.service
+  template:
+    src: patroni-buh.service.j2
+    dest: /lib/systemd/system/patroni-buh.service
+  notify:
+    - restart patroni buh
+
+- name: install patroni-zup.service
+  template:
+    src: patroni-zup.service.j2
+    dest: /lib/systemd/system/patroni-zup.service
+  notify:
+    - restart patroni zup
+
+
+- name: create patroni folder
+  file: state=directory dest=/etc/patroni owner=postgres
+
+- name: install patroni postgres template
+  template:
+    src: postgres-buh.yml.j2
+    dest: "/etc/patroni/postgres-buh.yml"
+    owner: "postgres"
+    mode: "0640"
+  notify: reload patroni buh
+
+- name: install patroni postgres template
+  template:
+    src: postgres-zup.yml.j2
+    dest: "/etc/patroni/postgres-zup.yml"
+    owner: "postgres"
+    mode: "0640"
+  notify: reload patroni zup
+
+- name: state enable patroni
+  systemd:
+    name: patroni-buh
+    state: started
+    enabled: yes
+
+- name: state enable patroni
+  systemd:
+    name: patroni-zup
+    state: started
+    enabled: yes

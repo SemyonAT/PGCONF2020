@@ -1,0 +1,6 @@
+---
+# handlers file for os
+
+- name: restart system
+  reboot: 
+    reboot_timeout: 300

@@ -1,0 +1,20 @@
+[PostgreSQL]
+pgsrv01    ansible_host=127.0.0.1 ansible_port=33550 ansible_private_key_file=.vagrant/machines/pgsrv01/virtualbox/private_key
+pgsrv02    ansible_host=127.0.0.1 ansible_port=33551 ansible_private_key_file=.vagrant/machines/pgsrv02/virtualbox/private_key
+
+[consul_one]
+consul     ansible_host=127.0.0.1 ansible_port=33554 ansible_private_key_file=.vagrant/machines/consul/virtualbox/private_key consul_node_role=server
+
+[consul_servers:children]
+PostgreSQL
+consul_one
+
+[PostgreSQL_maintenance:children]
+PostgreSQL
+
+###########################
+### consul
+[consul_srv] 
+pgsrv01  ansible_host=127.0.0.1 ansible_port=33550 ansible_private_key_file=.vagrant/machines/pgsrv01/virtualbox/private_key consul_node_role=bootstrap
+pgsrv02  ansible_host=127.0.0.1 ansible_port=33551 ansible_private_key_file=.vagrant/machines/pgsrv02/virtualbox/private_key consul_node_role=server
+consul   ansible_host=127.0.0.1 ansible_port=33554 ansible_private_key_file=.vagrant/machines/consul/virtualbox/private_key consul_node_role=server

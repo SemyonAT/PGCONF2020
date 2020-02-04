@@ -1,0 +1,122 @@
+---
+# tasks file for postgres1c
+##############################################################
+### set firewalld
+- name: Enable port for postgres in firewalld 5432
+  firewalld:
+    zone: public
+    service: postgresql
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 5433
+  firewalld:
+    zone: public
+    port: 5433/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 5434
+  firewalld:
+    zone: public
+    port: 5434/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 5435
+  firewalld:
+    zone: public
+    port: 5435/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+#####################################################
+### For commvault port
+- name: Enable port for consul in firewalld 8400
+  firewalld:
+    zone: public
+    port: 8400/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 8403
+  firewalld:
+    zone: public
+    port: 8403/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 8400
+  firewalld:
+    zone: public
+    port: 8400/udp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Enable port for consul in firewalld 8402
+  firewalld:
+    zone: public
+    port: 8402/udp
+    permanent: yes
+    immediate: yes
+    state: enabled
+#####################################################
+###  general settings  ###
+- name: install locale ru_RU.UTF-8
+  shell: localedef  -i ru_RU -f UTF-8 ru_RU.UTF-8
+
+- name: ansible create directory distrib
+  file:
+    path: /distrib
+    state: directory
+
+- name: copy distrib
+  copy:
+    src: "{{ item }}"
+    dest: "/distrib/{{ item }}"
+    mode: 0770
+  loop:
+    - postgresql11-1c-11.5-12.el7.x86_64.rpm
+    - postgresql11-1c-contrib-11.5-12.el7.x86_64.rpm
+    - postgresql11-1c-libs-11.5-12.el7.x86_64.rpm
+    - postgresql11-1c-server-11.5-12.el7.x86_64.rpm
+
+- name: install packages
+  yum:
+    name:
+      - readline
+      #- libtermcap
+      #- krb5-libs
+      - openssl
+      #- libicu50
+    state: latest
+
+- name: install postgres1c from a local file
+  yum:
+    name:
+      - /distrib/postgresql11-1c-libs-11.5-12.el7.x86_64.rpm
+      - /distrib/postgresql11-1c-11.5-12.el7.x86_64.rpm
+      - /distrib/postgresql11-1c-server-11.5-12.el7.x86_64.rpm
+      - /distrib/postgresql11-1c-contrib-11.5-12.el7.x86_64.rpm
+    state: present
+
+#############################################
+### set folders for postgres ###
+- name: ansible create directory
+  file: path=/var/lib/pgdata state=directory owner=postgres group=postgres mode=0700
+
+- name: ansible create directory
+  file: path=/var/lib/pgdata/buh state=directory owner=postgres group=postgres mode=0700
+
+- name: ansible create directory
+  file: path=/var/lib/pgdata/zup state=directory owner=postgres group=postgres mode=0700
+
+#############################################
+

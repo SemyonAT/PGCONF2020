@@ -1,0 +1,150 @@
+ttl: 30
+loop_wait: 10
+scope: zup
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    master_start_timeout: 300
+    synchronous_mode: off
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        max_locks_per_transaction: 256
+        wal_level: replica
+        max_connections: 500
+        #RAM/4
+        shared_buffers: 1GB
+        #256 MB
+        temp_buffers: 256MB
+        #RAM/32..64 или 32..128 MB
+        work_mem: 256MB
+        #память для обслуживания создание индексов вакум или автовакум
+        maintenance_work_mem: 1GB
+        #RAM - shared_buffers
+        effective_cache_size: 8GB
+        #эффективность дисковой ввода вывода для диска 1 рэйда 2
+        effective_io_concurrency: 1
+        # 1.1 - 1.3 ssd 1.5-2 raid
+        random_page_cost: 1.3
+                
+        autovacuum: on
+        #Количество ядер разделить на 4 или 2
+        autovacuum_max_workers: 4
+        #количество секунд через которое просыпается автовакум
+        autovacuum_naptime: 20s
+
+        bgwriter_delay: 20ms
+        bgwriter_lru_maxpages: 400
+        bgwriter_lru_multiplier: 4.0
+               
+        synchronous_commit: off
+
+        fsync: on
+        row_security: off
+
+  pg_hba:
+    - local   all             all                                     trust
+    - host    all             all             127.0.0.1/32            trust
+    - host    all             all             ::1/128                 trust
+    - host all all 0.0.0.0/0 md5
+    - host replication replicator 0.0.0.0/0    trust
+    - host replication barman 0.0.0.0/0    trust
+  initdb:
+  #  - data-checksums
+     - locale="ru_RU.UTF-8"
+  users:
+    superuser:
+      username: postgres
+      password: {{ postgres_password }}
+      options:
+        - createrole
+        - createdb
+        - superuser
+    replicator:
+      password: {{ postgres_replicator_password }}
+      options:
+        - replication
+    admin1c:
+      password: {{ postgres_1cadmin_password }}
+      options:
+        - createdb
+        - superuser
+        - createrole
+  restore: /opt/patroni/patroni/scripts/restore.py
+
+consul:
+  host: 127.0.0.1:8500
+  register_service: true
+
+postgresql:
+  superuser:
+    username: postgres
+    password: {{ postgres_password }}
+    options:
+      - createrole
+      - createdb
+      - superuser
+  replication:
+    username: replicator
+    password: {{ postgres_replicator_password }}
+    network:  0.0.0.0
+  admin1c:
+    password: {{ postgres_1cadmin_password }}
+    options:
+      - createdb
+      - superuser
+      - createrole
+  name: {{ ansible_hostname }}
+  create_replica_method:
+    - "basebackup"
+  scope: zup
+  listen: {{ postgres_listen_address }}:5433
+  connect_address: {{ postgres_listen_address }}:5433
+  data_dir: '/var/lib/pgdata/zup'
+  bin_dir: {{postgres_bin_dir}}
+  #config_dir: 
+  maximum_lag_on_failover: 1048576 # 1 megabyte in bytes
+  use_slots: True
+  config_base_name: postgresql
+  pg_ctl_timeout: 60
+  use_pg_rewind: true
+  remove_data_directory_on_rewind_failure: false
+  parameters:
+    archive_mode: "on"
+    wal_level: replica
+    archive_command: "true"
+    max_wal_senders: 5
+    wal_keep_segments: 8
+    archive_timeout: 1800s
+    max_replication_slots: 5
+    hot_standby: "on"
+    wal_log_hints: "on"
+    #For 1c 
+    standard_conforming_strings: off
+    escape_string_warning: off
+    max_locks_per_transaction: 256
+    
+    lc_messages: "en_US.UTF-8"
+    lc_monetary: 'ru_RU.UTF-8'
+    lc_numeric: 'ru_RU.UTF-8'
+    lc_time: 'ru_RU.UTF-8'
+    default_text_search_config: 'pg_catalog.russian'
+    online_analyze.threshold: 50
+    online_analyze.scale_factor: 0.1
+    online_analyze.enable: on
+    online_analyze.verbose: off
+    online_analyze.local_tracking: on
+    online_analyze.min_interval: 10000 
+    online_analyze.table_type: 'temporary'
+    
+    #shared_preload_libraries = 'online_analyze, plantuner, pg_stat_statements'
+
+restapi:
+  listen: 0.0.0.0:8009
+  connect_address: {{ ansible_hostname }}:8009
+  auth: 'patroni_user:{{ patroni_rest_password }}'

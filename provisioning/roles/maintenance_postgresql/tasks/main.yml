@@ -1,0 +1,116 @@
+---
+# tasks file for maintenance_postgresql
+##################################################################
+### General settings for maintenance postgres
+- name: create directory for script
+  file: path=/var/lib/pgsql/bin state=directory owner=postgres group=postgres mode=0700
+
+- name: create directory for log maintenance postgres
+  file: path=/var/log/maintenance_postgres state=directory owner=postgres group=postgres mode=0760
+
+- name: Copy all script
+  copy: 
+    src: "{{ item }}"
+    dest: "/var/lib/pgsql/bin/"
+    ##{{ item }}"
+    owner: postgres
+    group: postgres
+    mode: 0700
+  with_fileglob:
+    - "*"
+
+##################################################################
+### Backup postgres
+- name: scheduler for backup buh /etc/cron.d/postgres_maintenance
+  cron:
+    name: backup postgres cluster buh
+    #weekday: 1
+    minute: 1
+    hour: 0
+    user: postgres
+    job: "/var/lib/pgsql/bin/pg_basebackup_buh.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv01"
+
+- name: scheduler for backup zup /etc/cron.d/postgres_maintenance
+  cron:
+    name: backup postgres cluster zup
+    #weekday: 1
+    minute: 0
+    hour: 1
+    user: postgres
+    job: "/var/lib/pgsql/bin/pg_basebackup_zup.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv02"  
+
+##################################################################
+### Maintenance Daily postgres
+- name: scheduler for maintenance postgres buh /etc/cron.d/postgres_maintenance
+  cron:
+    name: daily maintenance postgres cluster buh
+    weekday: "1-6"
+    minute: 0
+    hour: 2
+    user: postgres
+    job: "/var/lib/pgsql/bin/maintenance_daily_buh.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv01"
+
+- name: scheduler for maintenance postgres zup /etc/cron.d/postgres_maintenance
+  cron:
+    name: daily maintenance postgres cluster zup
+    weekday: "1-6"
+    minute: 0
+    hour: 3
+    user: postgres
+    job: "/var/lib/pgsql/bin/maintenance_daily_zup.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv02"
+
+##################################################################
+### Maintenance Weekly postgres
+- name: scheduler for maintenance postgres buh weekly /etc/cron.d/postgres_maintenance
+  cron:
+    name: weekly maintenance postgres cluster buh
+    weekday: 6
+    minute: 0
+    hour: 23
+    user: postgres
+    job: "/var/lib/pgsql/bin/maintenance_weekly_buh.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv01"
+
+- name: scheduler for maintenance postgres zup weekly /etc/cron.d/postgres_maintenance
+  cron:
+    name: weekly maintenance postgres cluster zup
+    weekday: 6
+    minute: 0
+    hour: 22
+    user: postgres
+    job: "/var/lib/pgsql/bin/maintenance_weekly_zup.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv02"
+
+##################################################################
+### Restore postgres
+- name: scheduler for restore buh /etc/cron.d/postgres_maintenance
+  cron:
+    name: restore postgres cluster buh
+    #weekday: 1
+    minute: 0
+    hour: 3
+    user: postgres
+    job: "/var/lib/pgsql/bin/restore_backup_buh.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv11"
+
+- name: scheduler for restore zup /etc/cron.d/postgres_maintenance
+  cron:
+    name: restore postgres cluster zup
+    #weekday: 1
+    minute: 0
+    hour: 5
+    user: postgres
+    job: "/var/lib/pgsql/bin/restore_backup_zup.sh"
+    cron_file: postgres_maintenance
+  when: ansible_facts['hostname'] == "pgsrv11"

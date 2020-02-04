@@ -1,0 +1,32 @@
+---
+# handlers file for postgres1c
+- name: Restart postgres1c outs
+  systemd:
+    name: postgresql-10.service
+    state: restarted
+    enabled: yes
+
+- name: Restart postgres1c audit
+  systemd:
+    name: postgresql-10-audit.service
+    state: restarted
+    enabled: yes
+
+- name: Restart postgres1c dev
+  systemd:
+    name: postgresql-10-dev.service
+    state: restarted
+    enabled: yes
+
+- name: restart iscsid.service
+  systemd: 
+    name: iscsid.service
+    enabled: yes
+    state: restarted
+
+- name: restart multipathd.service
+  systemd: 
+    name: multipathd.service
+    enabled: yes
+    state: restarted
+

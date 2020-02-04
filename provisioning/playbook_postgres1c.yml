@@ -1,0 +1,49 @@
+---
+
+- hosts: consul_srv
+  become: true
+  roles:
+    - os
+
+- hosts: consul_srv
+  become: true
+  vars:
+    consul_group_name: "consul_srv"
+    consul_servers: "{{ groups['consul_srv'] }}"
+    consul_http_address: "{{ ansible_host }}"
+    consul_bind_address: "{{ ansible_host }}"
+    consul_client_address: "{{ ansible_host }}"
+    consul_advertise_address: "{{ ansible_host }}"
+    consul_version: 1.6.1
+    consul_dns_config: true
+    consul_recursors: ['8.8.8.8', '8.8.4.4']
+    consul_manage_service: true
+    consul_is_server: true
+    consul_join_at_start: true
+    consul_retry_join: true
+    consul_datacenter: "spb"
+    consul_bootstrap: true
+    consul_bootstrap_expect: 3
+    consul_port_dns: 53
+    consul_use_upstart: true
+    consul_leave_on_terminate: false
+    consul_bin_path: /usr/bin
+    consul_acl_policy: false
+    consul_acl_enable: false
+    consul_dnsmasq_enable: true
+    consul_architecture: amd64
+  roles:
+      - consul
+
+- hosts: PostgreSQL
+  become: true
+  roles:
+    - os
+    - postgres1c
+    - patroni
+
+- hosts: PostgreSQL_maintenance
+  become: true
+  roles:
+    - postgres1c
+    - maintenance_postgresql

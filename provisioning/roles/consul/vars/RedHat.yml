@@ -1,0 +1,6 @@
+---
+# File: RedHat.yml - Red Hat OS variables for Consul
+
+consul_os_packages:
+  - libselinux-python
+  - unzip

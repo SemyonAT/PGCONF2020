@@ -1,0 +1,4 @@
+---
+- name: Include NIX tasks
+  include_tasks: redhat.yml
+  when: ansible_os_family != 'Windows'
